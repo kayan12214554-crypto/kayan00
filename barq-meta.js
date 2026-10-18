@@ -8,7 +8,7 @@ const BARQ_META_PIXEL_ID='1116475627783726';
   UTM_KEYS.forEach(k=>{const v=params.get(k);if(v)campaign[k]=v.slice(0,200)});
 
   function analyticsAllowed(){
-    return window.barqConsent==='analytics' || localStorage.getItem('barq_consent_v1')==='analytics';
+    return window.barqConsent==='analytics' || localStorage.getItem('barq_consent_v2')==='analytics';
   }
 
   function validPixel(){return /^\d{6,25}$/.test(BARQ_META_PIXEL_ID)}
