@@ -16,17 +16,18 @@ const WA='306985808984';
 const waUrl=s=>`https://wa.me/${WA}?text=${encodeURIComponent('مرحباً برق كاش، أريد الاستفسار عن: '+s)}`;
 function trackWhatsApp(){
   if(window.barqMeta)window.barqMeta.trackContact();
+  if(window.barqGoogle)window.barqGoogle.trackContact();
 }
 document.querySelectorAll('.wa').forEach(a=>{const service=a.dataset.service||'استفسار عام';a.href=waUrl(service);a.target='_blank';a.rel='noopener noreferrer';a.addEventListener('click',()=>trackWhatsApp(service))});
 document.querySelectorAll('.waCard').forEach(c=>{const go=()=>{const service=c.dataset.service||'استفسار عام';trackWhatsApp(service);window.open(waUrl(service),'_blank','noopener,noreferrer')};c.addEventListener('click',go);c.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();go()}})});
 
 (function setupConsent(){
-  const KEY='barq_consent_v1';
+  const KEY='barq_consent_v2';
   const saved=localStorage.getItem(KEY);
   window.barqConsent=saved||'essential';
   if(saved)return;
   const box=document.createElement('div');box.className='eu-consent';box.setAttribute('role','dialog');box.setAttribute('aria-label','إعدادات الخصوصية');
-  box.innerHTML=`<p><strong>خصوصيتك مهمة.</strong> نستخدم التخزين الضروري فقط لتشغيل الموقع وحفظ اختيار الخصوصية. لن نفعّل أدوات التحليلات أو الإعلانات غير الضرورية إلا بعد موافقتك. عند فتح واتساب تنتقل إلى خدمة خارجية تخضع لسياسة واتساب. <a href="privacy.html">اقرأ سياسة الخصوصية</a>.</p><div class="eu-consent-actions"><button class="essential" type="button">الضروري فقط</button><button class="accept" type="button">السماح بالتحليلات</button></div>`;
+  box.innerHTML=`<p><strong>خصوصيتك مهمة.</strong> نستخدم التخزين الضروري فقط لتشغيل الموقع وحفظ اختيار الخصوصية. نطلب موافقتك على التحليلات وقياس الإعلانات عبر Google وMeta لقياس الزيارات وضغطات التواصل. لا نرسل اسم الخدمة أو رسائلك لهذه الأدوات. يمكنك الرفض أو سحب الموافقة من إعدادات الخصوصية في أسفل الصفحة. عند فتح واتساب تنتقل إلى خدمة خارجية تخضع لسياسة واتساب. <a href="privacy.html">اقرأ سياسة الخصوصية</a>.</p><div class="eu-consent-actions"><button class="essential" type="button">الضروري فقط</button><button class="accept" type="button">السماح بالتحليلات وقياس الإعلانات</button></div>`;
   document.body.appendChild(box);
   const choose=v=>{localStorage.setItem(KEY,v);window.barqConsent=v;box.remove();window.dispatchEvent(new CustomEvent('barq-consent-change',{detail:v}))};
   box.querySelector('.essential').addEventListener('click',()=>choose('essential'));
@@ -50,3 +51,52 @@ function arName(f,i){const iso=f.properties?.shapeISO,n=f.properties?.shapeName;
 function edgeKey(a,b){const p=`${a[0].toFixed(5)},${a[1].toFixed(5)}`,q=`${b[0].toFixed(5)},${b[1].toFixed(5)}`;return p<q?`${p}|${q}`:`${q}|${p}`}
 function renderMap(data){const svg=document.getElementById('syriaMap'),loading=document.getElementById('mapLoading');if(!svg)return;const W=800,H=560,P=16,pts=[];data.features.forEach(f=>rings(f.geometry).forEach(r=>r.forEach(p=>pts.push(p))));const av=pts.reduce((s,p)=>s+p[1],0)/pts.length,c=Math.cos(av*Math.PI/180),xs=pts.map(p=>p[0]*c),ys=pts.map(p=>p[1]),minX=Math.min(...xs),maxX=Math.max(...xs),minY=Math.min(...ys),maxY=Math.max(...ys),sc=Math.min((W-2*P)/(maxX-minX),(H-2*P)/(maxY-minY)),ox=(W-(maxX-minX)*sc)/2,oy=(H-(maxY-minY)*sc)/2,pr=p=>[ox+(p[0]*c-minX)*sc,H-(oy+(p[1]-minY)*sc)];svg.innerHTML='';const edgeMap=new Map();data.features.forEach(f=>rings(f.geometry).forEach(r=>{for(let k=1;k<r.length;k++){const a=r[k-1],b=r[k],key=edgeKey(a,b),item=edgeMap.get(key);if(item)item.count++;else edgeMap.set(key,{count:1,a,b})}}));data.features.forEach((f,i)=>{const n=f.properties?.shapeName||'',ar=arName(f,i),g=document.createElementNS('http://www.w3.org/2000/svg','g');g.setAttribute('class','gov');g.setAttribute('tabindex','0');g.setAttribute('role','button');g.setAttribute('aria-label',ar);let d='';rings(f.geometry).forEach(r=>{r.forEach((p,k)=>{const q=pr(p);d+=(k?'L':'M')+q[0].toFixed(1)+','+q[1].toFixed(1)});d+='Z'});const path=document.createElementNS('http://www.w3.org/2000/svg','path');path.setAttribute('d',d);path.setAttribute('fill-rule','evenodd');g.appendChild(path);let rs=outers(f.geometry).map(r=>r.map(pr)),big=rs[0]||[[W/2,H/2]];rs.forEach(r=>{if(area(r)>area(big))big=r});let [x,y]=centroid(big),t=TWEAK[n]||[0,0];x+=t[0];y+=t[1];const tx=document.createElementNS('http://www.w3.org/2000/svg','text');tx.setAttribute('x',x.toFixed(1));tx.setAttribute('y',y.toFixed(1));tx.textContent=ar;g.appendChild(tx);const sel=()=>{svg.querySelectorAll('.gov').forEach(z=>z.classList.remove('active'));g.classList.add('active')};g.addEventListener('click',sel);g.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();sel()}});svg.appendChild(g)});let od='';edgeMap.forEach(e=>{if(e.count===1){const a=pr(e.a),b=pr(e.b);od+=`M${a[0].toFixed(1)},${a[1].toFixed(1)}L${b[0].toFixed(1)},${b[1].toFixed(1)}`}});const outline=document.createElementNS('http://www.w3.org/2000/svg','path');outline.setAttribute('class','syria-outline');outline.setAttribute('d',od);svg.appendChild(outline);loading?.remove();svg.hidden=false}
 mapData().then(renderMap).catch(()=>{const l=document.getElementById('mapLoading');if(l)l.textContent='تعذّر تحميل الخريطة الآن. جرّب تحديث الصفحة.'});
+(function privacySettings(){
+  const links=document.querySelector('.footerLinks');
+  if(!links)return;
+  const link=document.createElement('a');
+  link.href='#privacy-settings';link.textContent='إعدادات الخصوصية';
+  link.addEventListener('click',e=>{
+    e.preventDefault();
+    localStorage.removeItem('barq_consent_v2');
+    localStorage.removeItem('barq_consent_v1');
+    window.barqConsent='essential';
+    ['_gcl_aw','_gcl_au','_fbp','_fbc'].forEach(name=>{
+      document.cookie=name+'=; Max-Age=0; path=/; SameSite=Lax';
+    });
+    location.reload();
+  });
+  links.appendChild(link);
+})();
+
+/* Google Ads: basic consent mode; no tag requests before measurement consent. */
+(function(){
+  const ADS_ID='AW-18298348462';
+  const SEND_TO=ADS_ID+'/y25GCOrvtKEdEK7HqpVE';
+  const KEY='barq_consent_v2';
+  let initialized=false,contactSent=false;
+  function allowed(){return localStorage.getItem(KEY)==='analytics'&&window.barqConsent==='analytics'}
+  function init(){
+    if(initialized||!allowed())return;
+    initialized=true;
+    window.dataLayer=window.dataLayer||[];
+    window.gtag=window.gtag||function(){window.dataLayer.push(arguments)};
+    gtag('consent','default',{ad_storage:'denied',analytics_storage:'denied',ad_user_data:'denied',ad_personalization:'denied'});
+    gtag('set','allow_ad_personalization_signals',false);
+    gtag('consent','update',{ad_storage:'granted',analytics_storage:'granted',ad_user_data:'granted',ad_personalization:'denied'});
+    gtag('js',new Date());
+    gtag('config',ADS_ID,{send_page_view:false,allow_ad_personalization_signals:false});
+    const script=document.createElement('script');
+    script.async=true;script.src='https://www.googletagmanager.com/gtag/js?id='+ADS_ID;
+    document.head.appendChild(script);
+  }
+  function trackContact(){
+    if(!allowed()||contactSent)return;
+    init();
+    contactSent=true;
+    gtag('event','conversion',{send_to:SEND_TO,value:0,currency:'EUR'});
+  }
+  window.addEventListener('barq-consent-change',e=>{if(e.detail==='analytics')init()});
+  window.barqGoogle={init,trackContact};
+  init();
+})();
