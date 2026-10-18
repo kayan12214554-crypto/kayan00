@@ -21,26 +21,16 @@ const BARQ_META_PIXEL_ID='1116475627783726';
     fbq('track','PageView');
   }
 
-  function serviceFrom(el){
-    const node=el&&el.closest&&el.closest('.wa,.waCard');
-    return node?(node.dataset.service||'استفسار عام'):'استفسار عام';
-  }
-
-  function trackContact(el){
+  function trackContact(){
     if(!analyticsAllowed())return;
     initMeta();
     if(typeof window.fbq!=='function')return;
-    const data=Object.assign({content_name:'WhatsApp',service:serviceFrom(el),page_url:location.href,referrer:document.referrer||''},campaign);
+    const data={content_name:'WhatsApp'};
     fbq('track','Contact',data);
   }
-
-  document.addEventListener('click',e=>{
-    const el=e.target&&e.target.closest&&e.target.closest('.wa,.waCard');
-    if(el)trackContact(el);
-  },true);
 
   window.addEventListener('barq-consent-change',e=>{if(e.detail==='analytics')initMeta()});
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',initMeta,{once:true});else initMeta();
 
-  window.barqMeta={init:initMeta,pixelConfigured:validPixel(),campaign};
+  window.barqMeta={init:initMeta,trackContact,pixelConfigured:validPixel(),campaign};
 })();
