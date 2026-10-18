@@ -1,6 +1,5 @@
-/* Barq Cash — Meta tracking bootstrap
-   Keep PIXEL_ID empty until the verified Meta Pixel/Dataset is available. */
-const BARQ_META_PIXEL_ID='';
+/* Barq Cash — Meta tracking bootstrap */
+const BARQ_META_PIXEL_ID='2218911821949743';
 
 (function(){
   const UTM_KEYS=['utm_source','utm_medium','utm_campaign','utm_content','utm_term'];
