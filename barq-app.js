@@ -14,12 +14,8 @@ document.querySelectorAll('.footerLinks a').forEach(a=>{if(a.href.includes('layr
 
 const WA='306985808984';
 const waUrl=s=>`https://wa.me/${WA}?text=${encodeURIComponent('مرحباً برق كاش، أريد الاستفسار عن: '+s)}`;
-function trackWhatsApp(service){
-  try{
-    if(window.barqConsent==='analytics'&&typeof window.fbq==='function'){
-      window.fbq('trackCustom','WhatsAppContact',{service:service||'استفسار عام'});
-    }
-  }catch(e){}
+function trackWhatsApp(){
+  if(window.barqMeta)window.barqMeta.trackContact();
 }
 document.querySelectorAll('.wa').forEach(a=>{const service=a.dataset.service||'استفسار عام';a.href=waUrl(service);a.target='_blank';a.rel='noopener noreferrer';a.addEventListener('click',()=>trackWhatsApp(service))});
 document.querySelectorAll('.waCard').forEach(c=>{const go=()=>{const service=c.dataset.service||'استفسار عام';trackWhatsApp(service);window.open(waUrl(service),'_blank','noopener,noreferrer')};c.addEventListener('click',go);c.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();go()}})});
