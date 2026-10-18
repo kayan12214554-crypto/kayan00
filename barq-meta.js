@@ -1,5 +1,5 @@
 /* Barq Cash — Meta tracking bootstrap */
-const BARQ_META_PIXEL_ID='2218911821949743';
+const BARQ_META_PIXEL_ID='1116475627783726';
 
 (function(){
   const UTM_KEYS=['utm_source','utm_medium','utm_campaign','utm_content','utm_term'];
